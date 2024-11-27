@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: #fff;
+            padding: 1rem;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header .home-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .header .home-btn:hover {
+            background-color: #0056b3;
+        }
+        main {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+        .products-section, .cart-section {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            width: 48%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .product-list, .cart-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .total {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>POS Tizimi</h1>
+        <button class="home-btn" onclick="goToHome()">📃</button>
+    </header>
+    <main>
+        <section class="products-section">
+            <h2>Mahsulotlar</h2>
+            <div class="product-list" id="product-list"></div>
+            <button id="add-product-btn">Mahsulot qo'shish</button>
+        </section>
+        <section class="cart-section">
+            <h2>Savat</h2>
+            <div class="cart-list" id="cart-list"></div>
+            <div class="total">
+                <p>Jami: <span id="total-price">0</span> so'm</p>
+                <button id="checkout-btn">To'lov</button>
+            </div>
+        </section>
+    </main>
+    <script>
+        let products = [
+            { id: 1, name: "Stnd 12", price: 12000 },
+        ];
+
+        let cart = [];
+        let orders = []; // Bugungi buyurtmalar
+
+        function renderProducts() {
+            const productList = document.getElementById("product-list");
+            productList.innerHTML = "";
+            products.forEach((product) => {
+                const productDiv = document.createElement("div");
+                productDiv.className = "product-item";
+                productDiv.innerHTML = `
+                    <p>${product.name} - ${product.price.toLocaleString()} so'm</p>
+                    <button onclick="addToCart(${product.id})">Savatga qo'shish</button>
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find((p) => p.id === productId);
+            cart.push(product);
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartList = document.getElementById("cart-list");
+            const totalPrice = document.getElementById("total-price");
+            cartList.innerHTML = "";
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                const cartDiv = document.createElement("div");
+                cartDiv.className = "cart-item";
+                cartDiv.innerHTML = `
+                    <p>${item.name} - ${item.price.toLocaleString()} so'm</p>
+                    <button onclick="removeFromCart(${index})">O'chirish</button>
+                `;
+                cartList.appendChild(cartDiv);
+            });
+            totalPrice.textContent = total.toLocaleString();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        document.getElementById("add-product-btn").addEventListener("click", () => {
+            const name = prompt("Mahsulot nomini kiriting:");
+            const price = parseFloat(prompt("Mahsulot narxini kiriting (so'm):"));
+            if (name && !isNaN(price)) {
+                const newProduct = { id: products.length + 1, name, price };
+                products.push(newProduct);
+                renderProducts();
+            } else {
+                alert("Kiritilgan ma'lumot noto'g'ri!");
+            }
+        });
+
+        function goToHome() {
+            localStorage.setItem("orders", JSON.stringify(orders));
+            window.location.href = "home.html";
+        }
+
+        document.getElementById("checkout-btn").addEventListener("click", () => {
+            orders = orders.concat(cart);
+            cart = [];
+            renderCart();
+            alert("Buyurtma qabul qilindi!");
+        });
+
+        renderProducts();
+    </script>
+</body>
+</html>
