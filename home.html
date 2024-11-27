@@ -74,7 +74,7 @@
         <h1>Bugungi Buyurtmalar</h1>
         <div class="nav-buttons">
             <button class="nav-btn" onclick="goToIndex()">📥</button>
-            <button class="nav-btn" onclick="goToSummary()">📠</button>
+            <button class="nav-btn" onclick="sendToTelegram()">📠</button>
         </div>
     </header>
     <main>
@@ -90,8 +90,52 @@
             window.location.href = "index.html";
         }
 
-        function goToSummary() {
-            window.location.href = "summary.html";
+        function sendToTelegram() {
+            const orders = JSON.parse(localStorage.getItem("orders")) || [];
+            let message = "Bugungi Buyurtmalar:\n\n";
+
+            if (orders.length === 0) {
+                message += "Hozircha buyurtmalar mavjud emas!";
+            } else {
+                orders.forEach(order => {
+                    message += `${order.name}: ${order.price.toLocaleString()} so'm\n`;
+                });
+            }
+
+            // Telegram bot token va chat ID
+            const botToken = "8014692392:AAFYbtxxOAggY7fxfTrwKX8EZtYWDSWXFCs";  // Telegram bot tokenini o'zgartiring
+            const chatId = "7261350095";  // Telegram chat ID ni o'zgartiring
+
+            // Telegram API URL
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            // Telegramga xabar yuborish
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    alert("Hisobot muvaffaqiyatli yuborildi!");
+                    // Hisobot yuborilganidan so'ng barcha buyurtmalarni o'chirish
+                    localStorage.removeItem("orders");
+                    // Sahifani yangilash yoki boshqa biror amal qilish mumkin
+                    renderOrders();
+                } else {
+                    alert("Xato: Hisobot yuborilmadi!");
+                }
+            })
+            .catch(error => {
+                console.error("Xato:", error);
+                alert("Telegramga yuborishda xato yuz berdi!");
+            });
         }
 
         function renderOrders() {
